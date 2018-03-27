@@ -518,6 +518,8 @@ struct stCoRoutine_t *co_create_env( stCoRoutineEnv_t * env, const stCoRoutineAt
 	return lp;
 }
 
+///attr上一个协程的属性，用于协程栈不够的时候扩展，新建传null
+//pfn epoll唤醒的时候的回调函数，arg回调函数的参数
 int co_create( stCoRoutine_t **ppco,const stCoRoutineAttr_t *attr,pfn_co_routine_t pfn,void *arg )
 {
 	if( !co_get_curr_thread_env() ) 
