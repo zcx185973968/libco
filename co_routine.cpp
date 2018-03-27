@@ -601,7 +601,8 @@ void co_swap(stCoRoutine_t* curr, stCoRoutine_t* pending_co)
  	stCoRoutineEnv_t* env = co_get_curr_thread_env();
 
 	//get curr stack sp
-	char c;
+	char c;//通过声明一个变量，获取当前栈顶sp，然后拷贝stackbuff（bp）到此位置的全部数据
+	
 	curr->stack_sp= &c;
 
 	if (!pending_co->cIsShareStack)
