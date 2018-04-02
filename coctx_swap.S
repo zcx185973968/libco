@@ -50,7 +50,8 @@ coctx_swap:
 	popl %esi
 	popl %ebp
 	popl %esp	//前一个栈的参数1地址，也就是sp+的地址，下面在push %eax，那么sp刚好回到原位，而且返回地址刚好处于当前的栈顶。x86 ret函数之前，会插入sp=bp,bp=pop
-	pushl %eax //set ret func addr 下面在push %eax，那么sp刚好回到原位，而且返回地址刚好处于当前的栈顶。x86 ret函数之前，会插入sp=bp,bp=pop
+	pushl %eax //set ret func addr 下面在push %eax，那么sp刚好回到原位，而且返回地址刚好处于当前的栈顶。x86 ret函数之前，会插入sp=bp,bp=pop，
+                   //反汇编的的时候，这里看到的是leaveq,就是这个意思
 
 	xorl %eax, %eax
 	ret		//现在栈顶是返回地址，所有的寄存器都恢复了，sp也指向了共享栈的位置，ret操作，直接执行栈顶指向的代码，就ok了。
