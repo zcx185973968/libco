@@ -23,11 +23,12 @@
 coctx_swap:
 
 #if defined(__i386__)
-	leal 4(%esp), %eax //sp 
-	movl 4(%esp), %esp 
-	leal 32(%esp), %esp //parm a : &regs[7] + sizeof(void*)
+	//此时上一个函数的压栈已经完成了，当前栈结构是  sp->返回地址  sp+4->参数1的地址,也就是当前协程 sp+8参数2的地址，也就是目标协程
+	leal 4(%esp), %eax //参数一，也就是当前协程地址放到eax
+	movl 4(%esp), %esp // 参数一的地址放进esp，因为这个结构，刚好是要切换出去的协程的的寄存器缓存地址
+	leal 32(%esp), %esp //parm a : &regs[7] + sizeof(void*)	//给寄存器的地址+8，因为栈只能从高往低操作，而堆是从低往高的，所以挪到末尾，因为push操作会减sp的值
 
-	pushl %eax //esp ->parm a 
+	pushl %eax //esp ->parm a //参数一地址压栈，主要是为了保存住sp+4的地址
 
 	pushl %ebp
 	pushl %esi
@@ -35,23 +36,23 @@ coctx_swap:
 	pushl %edx
 	pushl %ecx
 	pushl %ebx
-	pushl -4(%eax)
+	pushl -4(%eax)  //缓存的返回地址压栈
 
 	
-	movl 4(%eax), %esp //parm b -> &regs[0]
+	movl 4(%eax), %esp //parm b -> &regs[0]  //相当于sp+8,就是目标协程的地址放到eax
 
-	popl %eax  //ret func addr
+	popl %eax  //ret func addr  //最后压入的是返回地址
 	popl %ebx  
 	popl %ecx
 	popl %edx
 	popl %edi
 	popl %esi
 	popl %ebp
-	popl %esp
-	pushl %eax //set ret func addr
+	popl %esp	//前一个栈的参数1地址，也就是sp+的地址，下面在push %eax，那么sp刚好回到原位，而且返回地址刚好处于当前的栈顶。x86 ret函数之前，会插入sp=bp,bp=pop
+	pushl %eax //set ret func addr 下面在push %eax，那么sp刚好回到原位，而且返回地址刚好处于当前的栈顶。x86 ret函数之前，会插入sp=bp,bp=pop
 
 	xorl %eax, %eax
-	ret
+	ret		//现在栈顶是返回地址，所有的寄存器都恢复了，sp也指向了共享栈的位置，ret操作，直接执行栈顶指向的代码，就ok了。
 
 #elif defined(__x86_64__)
 	leaq 8(%rsp),%rax
