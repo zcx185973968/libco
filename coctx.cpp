@@ -96,18 +96,18 @@ int coctx_init( coctx_t *ctx )
 int coctx_make( coctx_t *ctx,coctx_pfn_t pfn,const void *s,const void *s1 )
 {
 	//make room for coctx_param
-	char *sp = ctx->ss_sp + ctx->ss_size - sizeof(coctx_param_t);
-	sp = (char*)((unsigned long)sp & -16L);
+	char *sp = ctx->ss_sp + ctx->ss_size - sizeof(coctx_param_t);   //将sp对到栈顶，然后留出参数的位置，8个字节
+	sp = (char*)((unsigned long)sp & -16L);				//这一步是处理内存对齐的问题，猜测
 
 	
-	coctx_param_t* param = (coctx_param_t*)sp ;
+	coctx_param_t* param = (coctx_param_t*)sp ;			//将参数放到栈顶，之后函数调用方便	
 	param->s1 = s;
 	param->s2 = s1;
 
 	memset(ctx->regs, 0, sizeof(ctx->regs));
 
-	ctx->regs[ kESP ] = (char*)(sp) - sizeof(void*);
-	ctx->regs[ kEIP ] = (char*)pfn;
+	ctx->regs[ kESP ] = (char*)(sp) - sizeof(void*);		//sp往下移动，为返回地址预留空间。
+	ctx->regs[ kEIP ] = (char*)pfn;					//对应的下一条指令的位置，也就是函数指针的位置
 
 	return 0;
 }
